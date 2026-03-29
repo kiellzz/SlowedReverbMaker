@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const PLAY_ICON = "\u25B6";
+  const PAUSE_ICON = "\u275A\u275A";
+
   const input = document.getElementById("file-input");
   const fileName = document.getElementById("file-name");
   const fileSize = document.getElementById("file-size");
@@ -52,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function resetPlayButton() {
     if (!playBtn) return;
     playBtn.classList.add("hidden");
-    playBtn.textContent = "\u25B6";
+    playBtn.textContent = PLAY_ICON;
     playBtn.setAttribute("aria-label", "Play preview");
   }
 
@@ -199,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (playBtn && previewUrl) {
       playBtn.classList.remove("hidden");
-      playBtn.textContent = "\u25B6";
+      playBtn.textContent = PLAY_ICON;
       playBtn.setAttribute("aria-label", "Play preview");
     }
 
@@ -617,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           previewAudio.addEventListener("ended", () => {
             if (playBtn) {
-              playBtn.textContent = "\u25B6";
+              playBtn.textContent = PLAY_ICON;
               playBtn.setAttribute("aria-label", "Play preview");
             }
           });
@@ -625,11 +628,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (previewAudio.paused) {
           await previewAudio.play();
-          playBtn.textContent = "\u23F8";
+          playBtn.textContent = PAUSE_ICON;
           playBtn.setAttribute("aria-label", "Pause preview");
         } else {
           previewAudio.pause();
-          playBtn.textContent = "\u25B6";
+          playBtn.textContent = PLAY_ICON;
           playBtn.setAttribute("aria-label", "Play preview");
         }
       } catch (error) {
