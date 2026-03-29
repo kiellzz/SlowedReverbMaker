@@ -1,24 +1,146 @@
-## Slowed + Reverb Maker
+# 🎧 Slowed + Reverb Maker
 
-A simple web app to transform any audio/song into a slowed + reverb effect.
+A modern web app to transform any audio into a **slowed/speed + reverb version** with a clean & interactive user experience.
 
-## Try It Online
+---
 
-[slowed-reverb-maker.onrender.com](https://slowed-reverb-maker.onrender.com/)
+## 🚀 Live Demo
 
-Upload any audio file (MP3, WAV, etc.)
-File size: maximum 10 MB
+🔗 https://slowed-reverb-maker.onrender.com/
 
-## Tech Stack
+---
 
-Frontend: HTML, CSS, JavaScript
-Backend: Node.js, Express, Multer, FFmpeg
-Deployment: Render
+## 🧠 About the Project
 
-## Deploy Notes
+This project was built to go beyond a simple audio converter, focusing on:
 
-The backend is tuned for lightweight deploys:
-- uses `spawn` instead of `exec` for FFmpeg jobs
-- strips metadata and ignores video streams
-- exports MP3 at `128k`, `44.1kHz`, stereo for faster processing
-- keeps upload size limited to 10 MB
+* polished UI/UX
+* real-time feedback
+* smooth interactions
+
+Users can upload an audio file, customize playback speed, preview the result, and download the processed version.
+
+---
+
+## ✨ Features
+
+### 🎛 Audio Processing
+
+* Adjustable speed (0.5x – 2.0x)
+* Slowed + reverb effect via FFmpeg
+* Output ready for download
+
+---
+
+### 🎨 Modern UI/UX
+
+* Glassmorphism + gradient dark theme
+* Animated background (subtle color transitions)
+* Responsive layout (mobile-friendly)
+* Smooth transitions and microinteractions
+
+---
+
+### 📂 File Handling
+
+* Drag & drop support
+* File preview (play/pause before download)
+* File metadata display (name + size)
+* Remove file with cleanup on backend
+
+---
+
+### 📊 Smart Progress System
+
+* Real upload progress (via XMLHttpRequest)
+* Simulated processing stage for better UX
+* Status states:
+
+  * Uploading...
+  * Processing...
+  * Finalizing...
+* Smooth animated progress bar
+
+---
+
+### 🕘 History System
+
+* Stores last processed audios (localStorage)
+* Quick re-download access
+* Delete items manually
+* Auto-removal when file expires
+
+---
+
+### 🧹 File Lifecycle Management
+
+* Temporary storage system:
+
+  * `/uploads` → raw files
+  * `/outputs` → processed files
+* Auto cleanup after a few minutes
+* Manual deletion via UI
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+
+* HTML5
+* CSS3 (custom UI, animations)
+* Vanilla JavaScript (no frameworks)
+
+### Backend
+
+* Node.js
+* Express
+* Multer (file upload)
+* FFmpeg (audio processing)
+
+### Deployment
+
+* Render
+
+---
+
+## ⚙️ How It Works
+
+1. User uploads an audio file
+2. File is sent to the backend (`/convert`)
+3. FFmpeg processes the audio with filters:
+
+   ```
+   asetrate=44100*speed,aresample=44100
+   ```
+4. Processed file is stored temporarily
+5. User can:
+
+   * preview audio
+   * download result
+6. Files are automatically deleted after some time
+
+---
+
+## 📦 Project Structure
+
+```
+/frontend
+  index.html
+  style.css
+  main.js
+
+/backend
+  server.js
+  /uploads
+  /outputs
+```
+
+## 👨‍💻 Author
+
+Developed by **Ezequiel Borges**
+
+* GitHub: https://github.com/kiellzz
+* LinkedIn: https://linkedin.com/in/ezequielborgesdev/
+
+---
