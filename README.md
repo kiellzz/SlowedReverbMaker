@@ -11,7 +11,7 @@
 
 ## 🎬 Demo
 
-![Demo](./media/demo.gif)
+![Demo](./media/media.gif)
 
 ---
 
