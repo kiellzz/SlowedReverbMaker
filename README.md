@@ -11,7 +11,7 @@
 
 ## 🎬 Demo
 
-<video src="./media/media.mp4" controls width="100%"></video>
+![Demo](./media/demo.gif)
 
 ---
 
