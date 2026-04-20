@@ -16,6 +16,8 @@
 </head>
 
 <body>
+  <canvas id="stars" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;"></canvas>
+
   <div class="bg-orb orb-1"></div>
   <div class="bg-orb orb-2"></div>
   <div class="bg-orb orb-3"></div>
@@ -27,40 +29,34 @@
         Transform any audio into a slowed/speed + reverb version
       </p>
 
-      <section class="speed-control">
         <div class="section-label-row">
           <label for="speedRange">Speed</label>
           <span class="speed-hint">0.5x to 2.0x</span>
         </div>
-
         <div class="slider-group">
           <input type="range" id="speedRange" min="0.5" max="2.0" step="0.05" value="0.85" />
-
           <div class="speed-number-wrap">
-            <input
-              type="text"
-              id="speedInput"
-              value="0.85"
-              inputmode="decimal"
-              autocomplete="off"
-              spellcheck="false"
-              aria-label="Playback speed" />
+            <input type="text" id="speedInput" value="0.85" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Playback speed" />
             <span class="multiplier">x</span>
           </div>
         </div>
-
         <div class="speed-presets">
-          <button type="button" class="preset-btn active" data-speed="0.85">
-            Slowed
-          </button>
-          <button type="button" class="preset-btn" data-speed="0.70">
-            Slowed +
-          </button>
-          <button type="button" class="preset-btn" data-speed="1.15">
-            Speed up
-          </button>
+          <button type="button" class="preset-btn active" data-speed="0.85">Slowed</button>
+          <button type="button" class="preset-btn" data-speed="0.70">Slowed +</button>
+          <button type="button" class="preset-btn" data-speed="1.15">Speed up</button>
         </div>
-      </section>
+
+        <div class="section-label-row">
+          <label for="reverbRange">Reverb</label>
+          <span class="speed-hint">0 to 100</span>
+        </div>
+        <div class="slider-group">
+          <input type="range" id="reverbRange" min="0" max="100" step="1" value="30" />
+          <div class="speed-number-wrap">
+            <input type="text" id="reverbInput" value="30" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Reverb amount" />
+            <span class="multiplier">%</span>
+          </div>
+        </div>
 
       <section class="upload-section" id="drop-zone">
         <label class="upload-btn" for="file-input">
@@ -86,13 +82,21 @@
             <p id="file-size">-- MB</p>
           </div>
 
-          <button type="button" id="play-btn" class="play-btn hidden" aria-label="Play preview">
-            &#9654;
-          </button>
+          <button type="button" id="play-btn" class="play-btn hidden" aria-label="Play preview"></button>
 
           <button type="button" id="remove-file-btn" class="close-file-btn" aria-label="Remove selected file">
             &times;
           </button>
+        </div>
+
+        <div id="audio-progress-wrap" class="audio-progress-wrap hidden">
+          <div class="audio-progress-track" id="audio-progress-track">
+            <div class="audio-progress-fill" id="audio-progress-fill"></div>
+          </div>
+          <div class="audio-time-row">
+            <span id="audio-current">0:00</span>
+            <span id="audio-duration">0:00</span>
+          </div>
         </div>
 
         <div class="process-status">

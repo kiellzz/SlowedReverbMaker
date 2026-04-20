@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("file-input");
   const fileName = document.getElementById("file-name");
@@ -17,6 +18,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const presetButtons = document.querySelectorAll(".preset-btn");
   const historyList = document.getElementById("history-list");
   const historySection = document.getElementById("history-section");
+  const reverbRange = document.getElementById('reverbRange');
+  const reverbInput = document.getElementById('reverbInput');
+  const audioProgressWrap = document.getElementById('audio-progress-wrap');
+  const audioProgressFill = document.getElementById('audio-progress-fill');
+  const audioProgressTrack = document.getElementById('audio-progress-track');
+  const audioCurrent = document.getElementById('audio-current');
+  const audioDuration = document.getElementById('audio-duration');
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+reverbRange.addEventListener('input', () => {
+  reverbInput.value = reverbRange.value;
+});
+
+reverbInput.addEventListener('blur', () => {
+  let val = parseInt(reverbInput.value);
+  if (isNaN(val)) val = 30;
+  val = Math.max(0, Math.min(100, val));
+  reverbInput.value = val;
+  reverbRange.value = val;
+});
 
   const UPLOAD_PROGRESS_SHARE = 55;
   const PROCESSING_START = 58;
@@ -247,84 +273,87 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function uploadAndConvertAudio(formData) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      let processingStarted = false;
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    let processingStarted = false;
 
-      xhr.open("POST", "/convert");
-      xhr.responseType = "json";
+    xhr.open("POST", "/convert");
+    xhr.responseType = "json";
 
-      xhr.upload.addEventListener("loadstart", () => {
-        updateProgress(2, "Uploading audio...", "Sending your file to the server.");
-      });
+    xhr.upload.addEventListener("loadstart", () => {
+      updateProgress(2, "Uploading audio...", "Sending your file to the server.");
+    });
 
-      xhr.upload.addEventListener("progress", (event) => {
-        if (!event.lengthComputable) return;
+    xhr.upload.addEventListener("progress", (event) => {
+      if (!event.lengthComputable) return;
 
-        const uploadPercent = Math.max(
-          3,
-          Math.min(
-            UPLOAD_PROGRESS_SHARE,
-            Math.round((event.loaded / event.total) * UPLOAD_PROGRESS_SHARE)
-          )
-        );
+      const uploadPercent = Math.max(
+        3,
+        Math.min(
+          UPLOAD_PROGRESS_SHARE,
+          Math.round((event.loaded / event.total) * UPLOAD_PROGRESS_SHARE)
+        )
+      );
 
-        const uploadedMb = (event.loaded / (1024 * 1024)).toFixed(2);
-        const totalMb = (event.total / (1024 * 1024)).toFixed(2);
+      const uploadedMb = (event.loaded / (1024 * 1024)).toFixed(2);
+      const totalMb = (event.total / (1024 * 1024)).toFixed(2);
 
-        updateProgress(
-          uploadPercent,
-          "Uploading audio...",
-          `${uploadedMb} MB of ${totalMb} MB sent`
-        );
-      });
+      updateProgress(
+        uploadPercent,
+        "Uploading audio...",
+        `${uploadedMb} MB of ${totalMb} MB sent`
+      );
+    });
 
-      xhr.upload.addEventListener("load", () => {
+    xhr.upload.addEventListener("load", () => {
+      processingStarted = true;
+      startProcessingSimulation(PROCESSING_START);
+    });
+
+    xhr.addEventListener("load", () => {
+      clearProgressInterval();
+
+      let responseData = null;
+      if (xhr.responseType === "json") {
+        responseData = xhr.response;
+      } else {
+        responseData = tryParseJson(xhr.responseText);
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(responseData || {});
+        return;
+      }
+
+      const errorMessage = (responseData && responseData.error) || "Server error";
+      reject(new Error(errorMessage));
+    });
+
+    xhr.addEventListener("error", () => {
+      clearProgressInterval();
+      reject(new Error("Network error"));
+    });
+
+    xhr.addEventListener("timeout", () => {
+      clearProgressInterval();
+      reject(new Error("Request timed out"));
+    });
+
+    xhr.addEventListener("abort", () => {
+      clearProgressInterval();
+      reject(new Error("Request aborted"));
+    });
+
+    xhr.addEventListener("readystatechange", () => {
+      if (xhr.readyState === XMLHttpRequest.HEADERS_RECEIVED && !processingStarted) {
         processingStarted = true;
         startProcessingSimulation(PROCESSING_START);
-      });
-
-      xhr.addEventListener("load", () => {
-        clearProgressInterval();
-
-        const responseData = xhr.response || tryParseJson(xhr.responseText);
-
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(responseData || {});
-          return;
-        }
-
-        const errorMessage =
-          (responseData && responseData.error) || "Server error";
-
-        reject(new Error(errorMessage));
-      });
-
-      xhr.addEventListener("error", () => {
-        clearProgressInterval();
-        reject(new Error("Network error"));
-      });
-
-      xhr.addEventListener("timeout", () => {
-        clearProgressInterval();
-        reject(new Error("Request timed out"));
-      });
-
-      xhr.addEventListener("abort", () => {
-        clearProgressInterval();
-        reject(new Error("Request aborted"));
-      });
-
-      xhr.addEventListener("readystatechange", () => {
-        if (xhr.readyState === XMLHttpRequest.HEADERS_RECEIVED && !processingStarted) {
-          processingStarted = true;
-          startProcessingSimulation(PROCESSING_START);
-        }
-      });
-
-      xhr.send(formData);
+      }
     });
-  }
+
+    xhr.send(formData);
+  });
+}
 
   function tryParseJson(value) {
     if (!value || typeof value !== "string") return null;
@@ -610,38 +639,58 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (playBtn) {
-    playBtn.addEventListener("click", async () => {
-      if (!previewUrl) return;
+  playBtn.addEventListener("click", async () => {
+    if (!previewUrl) return;
 
-      try {
-        if (!previewAudio) {
-          previewAudio = new Audio(previewUrl);
+    try {
+      if (!previewAudio) {
+        previewAudio = new Audio(previewUrl);
 
-          previewAudio.addEventListener("ended", () => {
-            if (playBtn) {
-              playBtn.classList.remove("is-playing");
-              playBtn.textContent = "";
-              playBtn.setAttribute("aria-label", "Play preview");
-            }
-          });
-        }
+        previewAudio.addEventListener("loadedmetadata", () => {
+          if (audioDuration) audioDuration.textContent = formatTime(previewAudio.duration);
+          if (audioProgressWrap) audioProgressWrap.classList.remove("hidden");
+        });
 
-        if (previewAudio.paused) {
-          await previewAudio.play();
-          playBtn.classList.add("is-playing");
-          playBtn.textContent = "";
-          playBtn.setAttribute("aria-label", "Pause preview");
-        } else {
-          previewAudio.pause();
-          playBtn.classList.remove("is-playing");
-          playBtn.textContent = "";
-          playBtn.setAttribute("aria-label", "Play preview");
-        }
-      } catch (error) {
-        console.error("Preview playback error:", error);
+        previewAudio.addEventListener("timeupdate", () => {
+          if (!previewAudio.duration) return;
+          const pct = (previewAudio.currentTime / previewAudio.duration) * 100;
+          if (audioProgressFill) audioProgressFill.style.width = `${pct}%`;
+          if (audioCurrent) audioCurrent.textContent = formatTime(previewAudio.currentTime);
+        });
+
+        previewAudio.addEventListener("ended", () => {
+          if (playBtn) {
+            playBtn.classList.remove("is-playing");
+            playBtn.setAttribute("aria-label", "Play preview");
+          }
+          if (audioProgressFill) audioProgressFill.style.width = "0%";
+          if (audioCurrent) audioCurrent.textContent = "0:00";
+        });
       }
+
+      if (previewAudio.paused) {
+        await previewAudio.play();
+        playBtn.classList.add("is-playing");
+        playBtn.setAttribute("aria-label", "Pause preview");
+      } else {
+        previewAudio.pause();
+        playBtn.classList.remove("is-playing");
+        playBtn.setAttribute("aria-label", "Play preview");
+      }
+    } catch (error) {
+      console.error("Preview playback error:", error);
+    }
+  });
+
+  if (audioProgressTrack) {
+    audioProgressTrack.addEventListener("click", (e) => {
+      if (!previewAudio || !previewAudio.duration) return;
+      const rect = audioProgressTrack.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      previewAudio.currentTime = pct * previewAudio.duration;
     });
   }
+}
 
   if (confirmBtn) {
     confirmBtn.addEventListener("click", async () => {
@@ -654,6 +703,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       formData.append("audio", selectedFile);
       formData.append("speed", normalizedSpeed);
+      formData.append("reverb", reverbRange.value);
 
       try {
         const data = await uploadAndConvertAudio(formData);
@@ -688,3 +738,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderHistory();
 });
+
+const starsCanvas = document.getElementById('stars');
+const sCtx = starsCanvas.getContext('2d');
+
+function resizeStars() {
+  starsCanvas.width = window.innerWidth;
+  starsCanvas.height = window.innerHeight;
+}
+resizeStars();
+window.addEventListener('resize', resizeStars);
+
+const stars = Array.from({ length: 200 }, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight * 0.8,
+  r: Math.random() * 1.2 + 0.2,
+  o: Math.random() * 0.7 + 0.2,
+  s: Math.random() * 0.006 + 0.002
+}));
+
+(function drawStars() {
+  sCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+  stars.forEach(s => {
+    s.o += s.s;
+    if (s.o > 0.9 || s.o < 0.15) s.s *= -1;
+    sCtx.beginPath();
+    sCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    sCtx.fillStyle = `rgba(255,255,255,${s.o})`;
+    sCtx.fill();
+  });
+  requestAnimationFrame(drawStars);
+})();

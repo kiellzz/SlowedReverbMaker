@@ -110,10 +110,28 @@ function sanitizeBaseFileName(name) {
   return name.replace(/[^\w\-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60) || "audio";
 }
 
-function runFfmpeg({ inputPath, outputPath, speed }) {
+function runFfmpeg({ inputPath, outputPath, speed, reverbAmount }) {
   return new Promise((resolve, reject) => {
     const ffmpegPath = process.env.FFMPEG_PATH || "ffmpeg";
-    const filter = `asetrate=${OUTPUT_SAMPLE_RATE}*${speed},aresample=${OUTPUT_SAMPLE_RATE}`;
+
+    let filter;
+    if (reverbAmount === 0) {
+    filter = `asetrate=${OUTPUT_SAMPLE_RATE}*${speed},aresample=${OUTPUT_SAMPLE_RATE}`;
+  } else {
+    const mix = Math.max(0.01, (reverbAmount / 100 * 0.15)).toFixed(2);
+    const d1 = 11, d2 = 19, d3 = 31, d4 = 47, d5 = 67, d6 = 89, d7 = 113, d8 = 139;
+    const dc1 = Math.max(0.01, (reverbAmount / 100 * 0.18)).toFixed(2);
+    const dc2 = Math.max(0.01, (reverbAmount / 100 * 0.14)).toFixed(2);
+    const dc3 = Math.max(0.01, (reverbAmount / 100 * 0.11)).toFixed(2);
+    const dc4 = Math.max(0.01, (reverbAmount / 100 * 0.08)).toFixed(2);
+    const dc5 = Math.max(0.01, (reverbAmount / 100 * 0.06)).toFixed(2);
+    const dc6 = Math.max(0.01, (reverbAmount / 100 * 0.04)).toFixed(2);
+    const dc7 = Math.max(0.01, (reverbAmount / 100 * 0.03)).toFixed(2);
+    const dc8 = Math.max(0.01, (reverbAmount / 100 * 0.02)).toFixed(2);
+
+    filter = `asetrate=${OUTPUT_SAMPLE_RATE}*${speed},aresample=${OUTPUT_SAMPLE_RATE},aecho=0.95:${mix}:${d1}|${d2}|${d3}|${d4}|${d5}|${d6}|${d7}|${d8}:${dc1}|${dc2}|${dc3}|${dc4}|${dc5}|${dc6}|${dc7}|${dc8},volume=4`;
+  }
+
     const args = [
       "-y",
       "-i",
@@ -203,11 +221,15 @@ app.post("/convert", (req, res) => {
     if (isNaN(speed)) speed = 1.0;
     if (speed < 0.5) speed = 0.5;
     if (speed > 2.0) speed = 2.0;
-
     speed = Number(speed.toFixed(2));
 
+    let reverbAmount = parseInt(req.body.reverb ?? "30");
+    if (isNaN(reverbAmount)) reverbAmount = 30;
+    if (reverbAmount < 0) reverbAmount = 0;
+    if (reverbAmount > 100) reverbAmount = 100;
+
     try {
-      await runFfmpeg({ inputPath, outputPath, speed });
+      await runFfmpeg({ inputPath, outputPath, speed, reverbAmount });
 
       deleteFileIfExists(inputPath);
       scheduleFileDeletion(outputPath);
