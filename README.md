@@ -1,5 +1,4 @@
 # 🎧 Slowed + Reverb Maker
-
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=ffffff)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=ffffff)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=000000)
@@ -11,6 +10,8 @@
 
 ## 🎬 Demo
 
+> ⚠️ The demo GIF below shows an older version of the UI. The current version features a redesigned space theme with new controls.
+
 ![Demo](./media/media.gif)
 
 🚀 Try it live: https://slowed-reverb-maker.onrender.com/
@@ -21,11 +22,11 @@
 
 This project was built to go beyond a simple audio converter, focusing on:
 
-* polished UI/UX
-* real-time feedback
-* smooth interactions
+* Polished UI/UX
+* Real-time feedback
+* Smooth interactions
 
-Users can upload an audio file, customize playback speed, preview the result, and download the processed version.
+Users can upload an audio file, customize playback speed and reverb intensity, preview the result, and download the processed version.
 
 ---
 
@@ -34,15 +35,18 @@ Users can upload an audio file, customize playback speed, preview the result, an
 ### 🎛 Audio Processing
 
 * Adjustable speed (0.5x – 2.0x)
+* Adjustable reverb intensity (0 – 100%)
 * Slowed + reverb effect via FFmpeg
+* Dynamic audio normalization
 * Output ready for download
 
 ---
 
 ### 🎨 Modern UI/UX
 
-* Glassmorphism + gradient dark theme
-* Animated background (subtle color transitions)
+* Space-themed dark UI with glassmorphism
+* Animated starfield background
+* Gradient title animation
 * Responsive layout (mobile-friendly)
 * Smooth transitions and microinteractions
 
@@ -51,7 +55,7 @@ Users can upload an audio file, customize playback speed, preview the result, an
 ### 📂 File Handling
 
 * Drag & drop support
-* File preview (play/pause before download)
+* File preview with interactive audio progress bar (click to seek)
 * File metadata display (name + size)
 * Remove file with cleanup on backend
 
@@ -62,7 +66,6 @@ Users can upload an audio file, customize playback speed, preview the result, an
 * Real upload progress (via XMLHttpRequest)
 * Simulated processing stage for better UX
 * Status states:
-
   * Uploading...
   * Processing...
   * Finalizing...
@@ -82,7 +85,6 @@ Users can upload an audio file, customize playback speed, preview the result, an
 ### 🧹 File Lifecycle Management
 
 * Temporary storage system:
-
   * `/uploads` → raw files
   * `/outputs` → processed files
 * Auto cleanup after a few minutes
@@ -93,63 +95,50 @@ Users can upload an audio file, customize playback speed, preview the result, an
 ## 🛠 Tech Stack
 
 ### Frontend
-
 * HTML5
 * CSS3 (custom UI, animations)
 * Vanilla JavaScript (no frameworks)
 
 ### Backend
-
 * Node.js
 * Express
 * Multer (file upload)
 * FFmpeg (audio processing)
 
 ### Deployment
-
 * Render
 
 ---
 
 ## ⚙️ How It Works
 
-1. User uploads an audio file  
-2. File is sent to the backend (`/convert`)  
+1. User uploads an audio file
+2. File is sent to the backend (`/convert`)
 3. FFmpeg processes the audio with filters:
-
 ```
-
-asetrate=44100*speed,aresample=44100
-
+asetrate=44100*speed, aresample=44100, aecho (multi-reflection reverb), dynaudnorm
 ```
-
-4. Processed file is stored temporarily  
+4. Processed file is stored temporarily
 5. User can:
-
-* preview audio  
-* download result  
-
-6. Files are automatically deleted after some time  
+   * preview audio with progress bar
+   * download result
+6. Files are automatically deleted after some time
 
 ---
 
 ## 📦 Project Structure
 
 ```
-
 /frontend
-index.html
-style.css
-main.js
-
+  index.html
+  style.css
+  main.js
 /backend
-server.js
-/uploads
-/outputs
-
+  server.js
+  /uploads
+  /outputs
 /media
-media.mp4
-
+  media.mp4
 ```
 
 ---
@@ -160,4 +149,3 @@ Developed by **Ezequiel Borges**
 
 * GitHub: https://github.com/kiellzz
 * LinkedIn: https://linkedin.com/in/ezequielborgesdev/
-
